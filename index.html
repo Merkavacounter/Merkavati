@@ -610,7 +610,7 @@
 // Change this value whenever you update the numbers.
 // Format: new Date(YEAR, MONTH_INDEX, DAY, HOUR, MINUTE)
 // Month index: 0=Jan, 1=Feb, 2=Mar, 3=Apr, 4=May, 5=Jun, 6=Jul, 7=Aug, 8=Sep, 9=Oct, 10=Nov, 11=Dec
-const ADMIN_LAST_UPDATED = new Date(2026, 2, 27, 14, 30); // ← Edit this line to update the timestamp
+const ADMIN_LAST_UPDATED = new Date(document.lastModified); // ← Edit this line to update the timestamp
 
 const ARABIC_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 function pad(n){return String(n).padStart(2,'0');}
