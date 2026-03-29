@@ -355,7 +355,7 @@
   <div class="counters">
     <div class="counter-card">
       <div class="counter-label">🔥 دبابات ميركافا محطّمة</div>
-      <div class="counter-value tanks" id="tanks">108</div>
+      <div class="counter-value tanks" id="tanks">75</div>
       <div class="counter-sub">منذ بدء المواجهة · مارس 2026</div>
     </div>
     <div class="counter-card">
@@ -580,7 +580,7 @@
       <span class="dot">◆</span>
       <span>💛 دفاعاً عن لبنان وشعبه</span>
       <span class="dot">◆</span>
-      <span>🔥 108 دبابة ميركافا محطّمة</span>
+      <span>🔥 75 دبابة ميركافا محطّمة</span>
       <span class="dot">◆</span>
       <span id="tickerDate1">📅 آخر تحديث: …</span>
       <span class="dot">◆</span>
@@ -590,7 +590,7 @@
       <span class="dot">◆</span>
       <span>💛 دفاعاً عن لبنان وشعبه</span>
       <span class="dot">◆</span>
-      <span>🪖 108 دبابة ميركافا محطّمة</span>
+      <span>🪖 75 دبابة ميركافا محطّمة</span>
       <span class="dot">◆</span>
       <span id="tickerDate2">📅 آخر تحديث: …</span>
       <span class="dot">◆</span>
@@ -606,44 +606,133 @@
 </div>
 
 <script>
-// ── ADMIN LAST-UPDATED TIMESTAMP ──
-// Change this value whenever you update the numbers.
-// Format: new Date(YEAR, MONTH_INDEX, DAY, HOUR, MINUTE)
-// Month index: 0=Jan, 1=Feb, 2=Mar, 3=Apr, 4=May, 5=Jun, 6=Jul, 7=Aug, 8=Sep, 9=Oct, 10=Nov, 11=Dec
-const ADMIN_LAST_UPDATED = new Date(document.lastModified); // ← Edit this line to update the timestamp
+// ── GITHUB-BASED LAST-UPDATED TIMESTAMP ──
+// This version tries to detect your GitHub Pages repo automatically.
+// If you use a custom domain or a different branch, set the values below manually.
+const GITHUB_CONFIG = {
+  owner: '',        // optional manual override, e.g. 'hadihamouch'
+  repo: '',         // optional manual override, e.g. 'my-site'
+  branch: '',       // optional manual override, e.g. 'main' or 'gh-pages'
+  filePath: ''      // optional manual override, e.g. 'index.html' or 'pages/index.html'
+};
 
 const ARABIC_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
 function pad(n){return String(n).padStart(2,'0');}
 function toArabicNumerals(s){
   const map={'0':'٠','1':'١','2':'٢','3':'٣','4':'٤','5':'٥','6':'٦','7':'٧','8':'٨','9':'٩'};
   return String(s).replace(/[0-9]/g,d=>map[d]);
 }
-function showAdminTimestamp(){
-  const d = ADMIN_LAST_UPDATED;
-  const h = pad(d.getHours());
-  const m = pad(d.getMinutes());
-  const day = pad(d.getDate());
-  const month = ARABIC_MONTHS[d.getMonth()];
-  const year = d.getFullYear();
-  const str = `<span class="label">آخر تحديث:</span> ${toArabicNumerals(h)}:${toArabicNumerals(m)} — ${toArabicNumerals(day)} ${month} ${toArabicNumerals(year)}`;
-  document.getElementById('liveClock').innerHTML = str;
-}
-showAdminTimestamp();
 
-// Populate ticker date labels
-(function(){
-  const d = ADMIN_LAST_UPDATED;
+function formatArabicTimestamp(d){
   const h = pad(d.getHours());
   const m = pad(d.getMinutes());
   const day = pad(d.getDate());
   const month = ARABIC_MONTHS[d.getMonth()];
   const year = d.getFullYear();
-  const label = `📅 آخر تحديث: ${toArabicNumerals(h)}:${toArabicNumerals(m)} — ${toArabicNumerals(day)} ${month} ${toArabicNumerals(year)}`;
+  return `${toArabicNumerals(h)}:${toArabicNumerals(m)} — ${toArabicNumerals(day)} ${month} ${toArabicNumerals(year)}`;
+}
+
+function renderTimestamp(dateObj){
+  const formatted = formatArabicTimestamp(dateObj);
+  const liveClock = document.getElementById('liveClock');
+  if (liveClock) {
+    liveClock.innerHTML = `<span class="label">آخر تحديث:</span> ${formatted}`;
+  }
+
+  const label = `📅 آخر تحديث: ${formatted}`;
   ['tickerDate1','tickerDate2'].forEach(id => {
     const el = document.getElementById(id);
-    if(el) el.textContent = label;
+    if (el) el.textContent = label;
   });
-})();
+}
+
+function getGitHubContext(){
+  if (GITHUB_CONFIG.owner && GITHUB_CONFIG.repo) {
+    return {
+      owner: GITHUB_CONFIG.owner,
+      repo: GITHUB_CONFIG.repo,
+      branchCandidates: [GITHUB_CONFIG.branch || 'main'],
+      filePath: GITHUB_CONFIG.filePath || getCurrentFilePathFromUrl()
+    };
+  }
+
+  const host = window.location.hostname;
+  const pathParts = window.location.pathname.split('/').filter(Boolean);
+
+  if (!host.endsWith('.github.io')) {
+    return null;
+  }
+
+  const owner = host.replace(/\.github\.io$/,'');
+  const isProjectSite = pathParts.length > 0 && pathParts[0] !== 'index.html';
+  const repo = isProjectSite ? pathParts[0] : owner + '.github.io';
+  const filePath = isProjectSite
+    ? (pathParts.slice(1).join('/') || 'index.html')
+    : (pathParts.join('/') || 'index.html');
+
+  return {
+    owner,
+    repo,
+    branchCandidates: ['main', 'master', 'gh-pages'],
+    filePath
+  };
+}
+
+function getCurrentFilePathFromUrl(){
+  const pathParts = window.location.pathname.split('/').filter(Boolean);
+  return pathParts[pathParts.length - 1] || 'index.html';
+}
+
+async function fetchLatestCommitDate(owner, repo, branch, filePath){
+  const apiUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/commits?sha=${encodeURIComponent(branch)}&path=${encodeURIComponent(filePath)}&per_page=1`;
+  const response = await fetch(apiUrl, {
+    headers: { 'Accept': 'application/vnd.github+json' }
+  });
+
+  if (!response.ok) {
+    throw new Error(`GitHub API error ${response.status} on branch ${branch}`);
+  }
+
+  const commits = await response.json();
+  if (!Array.isArray(commits) || commits.length === 0) {
+    throw new Error(`No commits found for ${filePath} on ${branch}`);
+  }
+
+  const isoDate = commits[0]?.commit?.committer?.date || commits[0]?.commit?.author?.date;
+  if (!isoDate) {
+    throw new Error('Commit date missing in GitHub API response');
+  }
+
+  return new Date(isoDate);
+}
+
+async function loadLastUpdated(){
+  try {
+    const ctx = getGitHubContext();
+    if (!ctx) {
+      throw new Error('GitHub Pages repo could not be auto-detected');
+    }
+
+    let lastError = null;
+    for (const branch of ctx.branchCandidates) {
+      try {
+        const date = await fetchLatestCommitDate(ctx.owner, ctx.repo, branch, ctx.filePath);
+        renderTimestamp(date);
+        return;
+      } catch (err) {
+        lastError = err;
+      }
+    }
+
+    throw lastError || new Error('Unable to fetch GitHub commit date');
+  } catch (error) {
+    console.warn('Falling back to document.lastModified:', error);
+    renderTimestamp(new Date(document.lastModified));
+  }
+}
+
+loadLastUpdated();
 
 // Animate counters
 function animateCount(el, target, duration) {
